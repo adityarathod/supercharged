@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import column as col, trim
+from pyspark.sql.functions import column as trim
 
 spark = SparkSession.builder.getOrCreate()
 
@@ -38,4 +38,4 @@ def etl(file_name: str) -> None:
     df = extract(file_name)
     df = transform(df)
     load(df)
-    print("Completed ETL job for providers")
+    print("Completed ETL job for facilities")
