@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.functions import trim
+from pyspark.sql.functions import column as trim, split
+from pyspark.sql.types import FloatType, IntegerType
 
 spark = SparkSession.builder.getOrCreate()
 
@@ -18,24 +19,23 @@ def extract(csv_path: str) -> DataFrame:
 def transform(df: DataFrame) -> DataFrame:
     return df.select(
         df["provider_id"],
-        trim("FACILITY_NAME").alias("facility_name"),
-        trim("FACILITY_STREET_ADDRESS").alias("facility_street"),
-        df["FACILITY_CITY"].alias("facility_city"),
-        df["STATE_DESC"].alias("facility_state"),
-        df["FACILITY_ZIP_CODE"].alias("facility_zip"),
-        df["HRR_DESC"].alias("facility_region"),
-    ).drop_duplicates(["provider_id", "facility_name", "facility_city"])
+        split("DRG_DESC", " - ").getItem(0).cast(IntegerType()).alias("drg_id"),
+        df["DISCHARGE_COUNT_SUM"].cast(IntegerType()).alias("discharge_count"),
+        df["MEAN_COVERED_CHARGES"].cast(FloatType()).alias("mean_covered_charges"),
+        df["MEAN_MEDICARE_PAYMENTS"].case(FloatType()).alias("mean_medicare_payments"),
+        df["MEAN_MEDICARE_REIMBURSEMENT"].alias("mean_medicare_reimburse"),
+    ).sort(["provider_id", "drg_id"])
 
 
 def load(df: DataFrame) -> None:
     df = df.coalesce(1)
     df.write.format("csv").option("header", True).option("quoteAll", True).mode(
         "overwrite"
-    ).save("tmp/facilities")
+    ).save("tmp/treatments")
 
 
 def etl(file_name: str) -> None:
     df = extract(file_name)
     df = transform(df)
     load(df)
-    print("Completed ETL job for facilities")
+    print("Completed ETL job for treatments")
