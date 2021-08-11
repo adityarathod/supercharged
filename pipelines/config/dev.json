@@ -1,0 +1,4 @@
+{
+	"input_csv": "tmp/MEDICARE_PROVIDER_CHARGE_INPATIENT_DRGALL_FY2018.CSV",
+	"output_db": "tmp/output.db"
+}
