@@ -1,5 +1,5 @@
-import * as sqlite3 from 'sqlite3'
+import Database from 'better-sqlite3'
 
-const db = new sqlite3.Database('db/supercharged.db')
+const db = new Database('db/supercharged.db', { verbose: console.log })
 
 export default db
